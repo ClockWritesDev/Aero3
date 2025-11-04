@@ -1,0 +1,17 @@
+{
+  "langrev": "0.7.5",
+  "warnings": [ "no-unused" ],
+  "dependency-search-paths": [ "lib" ],
+  "authors": [ "ClockWritesDev" ],
+  "version": "0.0.1",
+  "sources": [ "src/**" ],
+  "test-sources": [ "test/**" ],
+  "output": "build",
+  "targets": {
+    "make-lib": {
+
+    }
+  },
+  "cpu": "generic",
+  "opt": "O0"
+}
