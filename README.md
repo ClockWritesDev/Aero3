@@ -1,14 +1,17 @@
 # Aero3 Framework
-![Aero3 LOGO]()
-
+<div style="flex-direction=row;">
+<img src="./Aero3_Logo.svg" width="20%" style="margin=auto;">
 A cross-platform window library for creating graphical programs using native OS libs. Written in C3 lang.
+<div>
+<br>
 
 # About
-Aero3 is a free cross-platform window handler framework for graphical programs modified on top of the RGFW library fo the c programming language.
+Aero3 is a free cross-platform window handler framework for graphical programs modified on top of the RGFW library from C programming language.
+Credits for the RGFW inspiration: Copyright (C) 2022-2025 Riley Mabb (@ColleagueRiley)
 
 # Getting started
 ```rust
-module hellowindow_areo3;
+module hellowindow_aero3;
 import aero3::utils::types, aero3::core::windowhandler;
 import std::io;
 

@@ -10,6 +10,11 @@
   "targets": {
     "make-lib": {
 
+    },
+    "helloworld-aero3": { 
+      "linked-libraries" : [ "user32", "kernel32", "gdi32", "opengl32" ], 
+      "type": "executable", 
+      "sources": [ "test/01-HelloWindow/**" ] 
     }
   },
   "cpu": "generic",

@@ -1,0 +1,5 @@
+module aero3::utils::aero3_errors;
+
+faultdef AERO3_ALLOCATION_OUT_OF_MEMORY,
+    AERO3_LOG_CONTRACT_REJECTED,
+    AERO3_WIN32_COULD_NOT_CREATE_WINDOW;

@@ -1,0 +1,3 @@
+
+
+alias CodeCallback = fn void();
