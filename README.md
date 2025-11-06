@@ -12,20 +12,17 @@ Credits for the RGFW inspiration: Copyright (C) 2022-2025 Riley Mabb (@Colleague
 # Getting started
 ```rust
 module hellowindow_aero3;
-import aero3::utils::types, aero3::core::windowhandler;
+import aero3;
 import std::io;
 
 fn void main(String[] args)
 {
-    Aero3Window* win = createAero3Window("HelloWindow", (Rect){0, 0, 500, 500}, CENTER);
-    defer closeAero3Window(win);
+    Aero3Window* win = createWindow("HelloWindow", (Rect){0, 0, 500, 500}, CENTER);
+    defer win.closeWindow();
 
-    bool running = true;
-
-    while (running) {
-        Aero3Event* events = checkEvent(win);
+    while (!win.windowShouldClose()) {
+        Aero3Event* events = win.checkEvent();
         if (events != null) {
-            io::printfn("event type %d", events.type.ordinal);
             if (events.keyCode == Aero3Key.ESCAPE) running = false;
         }
     }   

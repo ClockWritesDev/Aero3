@@ -1,5 +1,5 @@
 module aero3::logger::registry;
-import std::core::string, std::collections;
+import std::core::string, std::collections, std::io;
 
 typedef Category = inline String;
 typedef RegType = inline char;
@@ -32,7 +32,6 @@ String[256] registries_types_names = {
 struct LogRegistries {
     Category category_type;
     List{Aero3Logger} loggers;
-    LogID loggers_length;
 }
 
 fn LogRegistries newRegistry(Category category_type) {
@@ -42,29 +41,34 @@ fn LogRegistries newRegistry(Category category_type) {
     return (LogRegistries) {
         .category_type = category_type,
         .loggers = log_list,
-        .loggers_length = 0
     };
 }
 
-fn void LogRegistries.registerLog(&self, String msg) {
-    LogID newid = self.loggers_length + 1;
-    Aero3Logger newlog = logger::newLogger(msg, newid);
-    self.loggers.push(newlog);
-    self.loggers_length = (LogID)self.loggers.size;
-}
+fn LogID LogRegistries.registerLog(&self, String msg, RegType new_reg_type = REG_INFO) {
+    LogID new_id = (LogID)self.loggers.size;
 
-fn Aero3Logger* LogRegistries.borrowLog(&self, LogID id) {
-    return &self.loggers.get((usz)id);
-}
+    Aero3Logger new_log = logger::newLogger(msg, (LogID)self.loggers.size, new_reg_type);
+    self.loggers.push(new_log);
 
-fn void LogRegistries.log(&self, RegType registry_type) {
+    return new_id;
+}
+fn Aero3Logger LogRegistries.borrowLog(&self, LogID id) {
+    return self.loggers.get((usz)id);
+}
+fn void LogRegistries.setLog(&self, LogID id, String new_msg, RegType new_reg_type) {
+    Aero3Logger log = self.borrowLog(id);
+    log.updateLogger(new_msg, new_reg_type);
+}
+fn void LogRegistries.log(&self, LogID id) {
+    Aero3Logger borrowed_log = self.borrowLog(id);
+    borrowed_log.consoleLog(self.category_type);
+}
+fn void LogRegistries.logAll(&self) {
     foreach (log : self.loggers)
     {
-        log.consoleLog(self.category_type, registry_type);
+        log.consoleLog(self.category_type);
     }
 }
-
 fn void LogRegistries.cleanUpLogs(&self) {
-
     self.loggers.free();
 }

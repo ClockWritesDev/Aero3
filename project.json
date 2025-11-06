@@ -8,9 +8,6 @@
   "test-sources": [ "test/**" ],
   "output": "build",
   "targets": {
-    "make-lib": {
-
-    },
     "helloworld-aero3": { 
       "linked-libraries" : [ "user32", "kernel32", "gdi32", "opengl32" ], 
       "type": "executable", 
