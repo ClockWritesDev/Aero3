@@ -1,19 +1,37 @@
 {
-  "langrev": "0.7.5",
-  "warnings": [ "no-unused" ],
-  "dependency-search-paths": [ "lib" ],
+  "provides" : "Aero3",
   "authors": [ "ClockWritesDev" ],
-  "version": "0.0.1",
+  "version": "0.0.2-SNAPSHOT",
+
   "sources": [ "src/**" ],
-  "test-sources": [ "test/**" ],
   "output": "build",
-  "targets": {
-    "helloworld-aero3": { 
-      "linked-libraries" : [ "user32", "kernel32", "gdi32", "opengl32" ], 
+
+  "targets" : {
+    "Aero3-linux-x64" : {
+      "linkflags" : [],
+      "type": "static-lib",
+      "dependencies" : [],
+      "linked-libs" : [ "GL", "X11", "xrandr" ]
+    },
+    "Aero3-windows-x64" : {
+      "linkflags" : [],
+      "type": "static-lib",
+      "dependencies" : [],
+      "linked-libs" : [ "opengl32", "gdi32", "kernel32", "user32" ]
+    },
+
+    "linux-helloworld-aero3": { 
+        "linked-libs" : [ "GL", "X11", "xrandr" ],
+        "type": "executable", 
+        "sources": [ "test/01-HelloWindow/**" ] 
+    },
+    "windows-helloworld-aero3": { 
+      "linked-libraries" : [ "opengl32", "gdi32", "kernel32", "user32" ], 
       "type": "executable", 
       "sources": [ "test/01-HelloWindow/**" ] 
     }
   },
+
   "cpu": "generic",
   "opt": "O0"
 }

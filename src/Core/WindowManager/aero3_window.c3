@@ -1,13 +1,14 @@
-module aero3::core::window;
+module aero3;
 
 import aero3::core::win32_window_manager @norecurse;
 import aero3::core::linux_window_manager @norecurse;
-import aero3::core::events_handler, aero3::core::input_handler;
+import aero3::core::events_handler, aero3::inputs;
 import aero3::utils::types, aero3::utils::aero3_errors;
-import aero3::logger;
+import aero3::math::collections;
+import aero3::logger, aero3::logger::registry;
 
 import std::io;
-import aero3::logger::registry;
+import std::thread;
 
 const TRANSPARENT_WINDOW = (1L<<9);
 const NO_BORDER = (1L<<3);
@@ -26,45 +27,52 @@ struct Aero3Window {
     Win32Window src @if(env::WIN32);
 	WString title @if(env::WIN32);
 	ZString title @if(env::LINUX);
+	Aero3Monitor current_monitor;
     Aero3Event events;
     Rect window_size_pos;
 	LogRegistries window_registry;
 }
+struct Aero3Monitor {
+	String monitor_name;
+	Rect monitor_size_pos;
+	float sizeX;
+	float sizeY;
+	float realW;
+	float realH;
+}
+struct Aero3Icon {
+	char* data;
+
+}
+struct Aero3Image {
+	char* data;
+	Vec2 size;
+	float rotation;
+}
 
 fn Aero3Window? createWindow(String title, Rect window_size_pos) {
 	LogRegistries window_registry = registry::newRegistry(registry::CAT_WINDOW);
-    Aero3Event event;
-	LogID creating_id = window_registry.registerLog("Creating Window");
+    Aero3Monitor current_monitor;
+	Aero3Event event;
 
     $if $defined(env::WIN32):
         WString title_win_style = String.to_wstring(title, allocator::mem)!!;
         Win32Window? src = win32_window_manager::createWin32Window(window_size_pos, title_win_style);
 		if (catch src) {
-			window_registry.setLog(creating_id, "WIN32 Window Could Not Be Created", registry::REG_FATAL);
-			window_registry.log(creating_id);
+			window_registry.registerLog("WIN32 Window Could Not Be Created", registry::REG_FATAL);
+			window_registry.log();
 			return aero3_errors::AERO3_WIN32_COULD_NOT_CREATE_WINDOW?;
 		}
 
-        window_registry.log(creating_id);
+		window_registry.registerLog("Creating WIN32 Window");
+        window_registry.log();
 
-        return (Aero3Window) {src, title_win_style, event, window_size_pos, window_registry};
+        return (Aero3Window) {src, title_win_style, current_monitor, event, window_size_pos, window_registry};
     $endif
     $if $defined(env::LINUX):
 
     $endif
 }
-
-fn bool Aero3Window.windowShouldClose(&self) {
-    return (self.events.type == events_handler::QUIT);
-}
-
-fn void Aero3Window.windowSetShouldClose(&self) {
-	self.events.type = events_handler::QUIT;
-}
-
-/*fn bool Aero3Window.buttonIsPressed(&self, btn) {
-    return true;
-}*/
 
 fn void Aero3Window.updateWindow(&self) {
     $if $defined(env::WIN32):
@@ -75,10 +83,8 @@ fn void Aero3Window.updateWindow(&self) {
     $endif
 }
 fn void Aero3Window.closeWindow(&self) {
-	LogID closing_id = self.window_registry.registerLog("Deleting & Closing Window");
-	io::printfn("%d", closing_id);
-	defer self.window_registry.log(closing_id);
-	defer self.window_registry.cleanUpLogs();
+	self.window_registry.registerLog("Closing & Deleting Window");
+	defer self.window_registry.log();
 
     $if $defined(env::WIN32):
         self.src.closeWin32Window();
@@ -86,139 +92,94 @@ fn void Aero3Window.closeWindow(&self) {
     $if $defined(env::LINUX):
 
     $endif
-}/*
-RGFW_Event* RGFW_window_checkEvent(RGFW_window* win); /*!< check current event (returns a pointer to win->event or NULL if there is no event)*/
+}
 
-	/*
-		check all the events until there are none left,
-		this should only be used if you're using callbacks only
-	*/
-	RGFWDEF void RGFW_window_checkEvents(RGFW_window* win);
+fn bool Aero3Window.windowShouldClose(&self) {
+    return (self.events.type == events_handler::QUIT);
+}
+fn void Aero3Window.setShouldClose(&self) {
+	self.events.type = events_handler::QUIT;
+}
+
+fn void Aero3Window.swapBuffers(&self) {}
+fn void Aero3Window.setVsync(&self, bool vSync) {}
+fn void Aero3Window.sleep(&self, int secs) { thread::sleep_ms((ulong)secs/1000); }
+
+fn void Aero3Window.moveWindow(&self, Vec2 new_pos) {}
+fn void Aero3Window.moveWindowToMonitor(&self, Aero3Monitor monitor) {}
+fn void Aero3Window.resizeWindow(&self, Area area) {}
+fn void Aero3Window.setWindowMinSize(&self, Area area) {}
+fn void Aero3Window.setWindowMaxSize(&self, Area area) {}
+fn void Aero3Window.maximizeWindow(&self) {}
+fn void Aero3Window.minimizeWindow(&self) {}
+fn void Aero3Window.restoreWindow(&self) {}
+fn void Aero3Window.setWindowBorder(&self, bool border) {}
+fn void Aero3Window.setWindowName(&self, String new_name) {}
+fn void Aero3Window.setWindowIcon(&self, Aero3Icon icon, Area area, int channels) {}
+fn void Aero3Window.hideWindow(&self) {}
+fn void Aero3Window.showWindow(&self) {}
+
+fn void Aero3Window.setMouse(&self, Aero3Image image, Area area, int channels) {}
+fn void Aero3Window.setMouseStandard(&self, char mouse) {}
+fn void Aero3Window.setMouseDefault(&self) {}
+fn void Aero3Window.windowMouseHold(&self, Area area) {}
+fn void Aero3Window.windowMouseUnhold(&self) {}
+fn Point Aero3Window.getGlobalMousePoint(&self) {
+
+	return (Point) {};
+}
+fn Point Aero3Window.getMousePoint(&self) {
+	
+	return (Point) {};
+}
+fn void Aero3Window.showMouse(&self, bool show) {}
+fn void Aero3Window.moveMouse(&self, Vec2 pos) {}
+
+fn bool Aero3Window.isFullscreen(&self) {
+	return true;
+}
+fn bool Aero3Window.isHidden(&self) {
+	return true;
+}
+fn bool Aero3Window.isMinimized(&self) {	return true;}
+fn bool Aero3Window.isMaximized(&self) {	return true;}
+fn void Aero3Window.scaleToMonitor(&self) {}
+fn Aero3Monitor Aero3Window.getMonitor(&self) {return (Aero3Monitor){};}
+fn void Aero3Window.makeCurrent(&self) {}
+fn bool Aero3Window.isKeyPressed(&self, Aero3Key key) {
+    $if $defined(env::WIN32):
+		if (self.events.btn_event.key_down == true && self.events.btn_event.key_code == key) {
+			return true;
+		} else {
+			return false;
+		}
+    $endif
+    $if $defined(env::LINUX):
+
+    $endif
+}
+fn bool Aero3Window.isKeyHeld(&self, Aero3Key key) {
+	return true;
+}
+fn bool Aero3Window.isKeyReleased(&self, Aero3Key key) {
+	return true;
+}
+fn bool Aero3Window.wasKeyPressed(&self, Aero3Key key) {
+	return true;
+}
+fn bool Aero3Window.isKeyClicked(&self, Aero3Key key) {	return true;}
+fn bool Aero3Window.isMousePressed(&self, MouseEvent button) {	return true;}
+fn bool Aero3Window.isMouseHeld(&self, MouseEvent button) {	return true;}
+fn bool Aero3Window.isMouseReleased(&self, MouseEvent button) {	return true;}
+fn bool Aero3Window.wasMousePressed(&self, MouseEvent button) {	return true;}
 
 
-	/*! window managment functions*/
-	RGFWDEF void RGFW_window_close(RGFW_window* win); /*!< close the window and free leftover data */
-
-	RGFWDEF void RGFW_window_move(RGFW_window* win,
-		RGFW_vector v/* new pos*/
-	);
-
-	#ifndef RGFW_NO_MONITOR
-	/* move to a specific monitor */
-	RGFWDEF void RGFW_window_moveToMonitor(RGFW_window* win, RGFW_monitor m);
-	#endif
-	RGFWDEF void RGFW_window_resize(RGFW_window* win,
-		RGFW_area a/* new size*/
-	);
-
-	/* set the minimum size a user can shrink a window */
-	RGFWDEF void RGFW_window_setMinSize(RGFW_window* win, RGFW_area a);
-	/* set the minimum size a user can extend a window */
-	RGFWDEF void RGFW_window_setMaxSize(RGFW_window* win, RGFW_area a);
-
-	RGFWDEF void RGFW_window_maximize(RGFW_window* win); /* maximize the window size */
-	RGFWDEF void RGFW_window_minimize(RGFW_window* win); /* minimize the window (in taskbar (per OS))*/
-	RGFWDEF void RGFW_window_restore(RGFW_window* win); /* restore the window from minimized (per OS)*/
-
-	RGFWDEF void RGFW_window_setBorder(RGFW_window* win, b8 border); /* if the window should have a border or not (borderless) based on bool value of `border` */
-
-	RGFWDEF void RGFW_window_setDND(RGFW_window* win, b8 allow); /* turn on / off dnd (RGFW_ALLOW_DND stil must be passed to the window)*/
+/*
+Some functions to add based on RGFW window Functions patterns
 
 	#ifndef RGFW_NO_PASSTHROUGH
 	RGFWDEF void RGFW_window_setMousePassthrough(RGFW_window* win, b8 passthrough); /* turn on / off mouse passthrough */
 	#endif
-
-	RGFWDEF void RGFW_window_setName(RGFW_window* win,
-		char* name
-	);
-
-	void RGFW_window_setIcon(RGFW_window* win, /*!< source window */
-		u8* icon /*!< icon bitmap */,
-		RGFW_area a /*!< width and height of the bitmap*/,
-		i32 channels /*!< how many channels the bitmap has (rgb : 3, rgba : 4) */
-	); /*!< image resized by default */
-
-	/*!< sets mouse to bitmap (very simular to RGFW_window_setIcon), image NOT resized by default*/
-	RGFWDEF void RGFW_window_setMouse(RGFW_window* win, u8* image, RGFW_area a, i32 channels);
-
-	/*!< sets the mouse to a standard API cursor (based on RGFW_MOUSE, as seen at the end of the RGFW_HEADER part of this file) */
-	RGFWDEF	void RGFW_window_setMouseStandard(RGFW_window* win, u8 mouse);
-
-	RGFWDEF void RGFW_window_setMouseDefault(RGFW_window* win); /* sets the mouse to1` the default mouse image */
-	/*
-		holds the mouse in place by moving the mouse back each time it moves
-		you can still use win->event.point to see how much it moved before it was put back in place
-
-		this is useful for a 3D camera
-	*/
-	RGFWDEF void RGFW_window_mouseHold(RGFW_window* win, RGFW_area area);
-	/* undo hold */
-	RGFWDEF void RGFW_window_mouseUnhold(RGFW_window* win);
-
-	/* hide the window */
-	RGFWDEF void RGFW_window_hide(RGFW_window* win);
-	/* show the window */
-	RGFWDEF void RGFW_window_show(RGFW_window* win);
-
-	/*
-		makes it so `RGFW_window_shouldClose` returns true
-		by setting the window event.type to RGFW_quit
-	*/
-	RGFWDEF void RGFW_window_setShouldClose(RGFW_window* win);
-
-	/* where the mouse is on the screen */
-	RGFWDEF RGFW_vector RGFW_getGlobalMousePoint(void);
-
-	/* where the mouse is on the window */
-	RGFWDEF RGFW_vector RGFW_window_getMousePoint(RGFW_window* win);
-
-	/* show the mouse or hide the mouse*/
-	RGFWDEF void RGFW_window_showMouse(RGFW_window* win, i8 show);
-	/* move the mouse to a set x, y pos*/
-	RGFWDEF void RGFW_window_moveMouse(RGFW_window* win, RGFW_vector v);
-
-	/* if the window should close (RGFW_close was sent or escape was pressed) */
-	RGFWDEF b8 RGFW_window_shouldClose(RGFW_window* win);
-	/* if window is fullscreen'd */
-	RGFWDEF b8 RGFW_window_isFullscreen(RGFW_window* win);
-	/* if window is hidden */
-	RGFWDEF b8 RGFW_window_isHidden(RGFW_window* win);
-	/* if window is minimized */
-	RGFWDEF b8 RGFW_window_isMinimized(RGFW_window* win);
-	/* if window is maximized */
-	RGFWDEF b8 RGFW_window_isMaximized(RGFW_window* win);
-
-
-	#ifndef RGFW_NO_MONITOR
-	/*
-	scale the window to the monitor,
-	this is run by default if the user uses the arg `RGFW_SCALE_TO_MONITOR` during window creation
-	*/
-	RGFWDEF void RGFW_window_scaleToMonitor(RGFW_window* win);
-	/* get the struct of the window's monitor  */
-	RGFWDEF RGFW_monitor RGFW_window_getMonitor(RGFW_window* win);
-	#endif
-
-	/*!< make the window the current opengl drawing context */
-	RGFWDEF void RGFW_window_makeCurrent(RGFW_window* win);
-
-	/*error handling*/
-	RGFWDEF b8 RGFW_Error(void); /* returns true if an error has occurred (doesn't print errors itself) */
-
-	/*!< if window == NULL, it checks if the key is pressed globally. Otherwise, it checks only if the key is pressed while the window in focus.*/
-	RGFWDEF b8 RGFW_isPressed(RGFW_window* win, u8 key); /*!< if key is pressed (key code)*/
-
-	RGFWDEF b8 RGFW_wasPressed(RGFW_window* win, u8 key); /*!< if key was pressed (checks prev keymap only) (key code)*/
-
-	RGFWDEF b8 RGFW_isHeld(RGFW_window* win, u8 key); /*!< if key is held (key code)*/
-	RGFWDEF b8 RGFW_isReleased(RGFW_window* win, u8 key); /*!< if key is released (key code)*/
-
-	RGFWDEF b8 RGFW_isClicked(RGFW_window* win, u8 key);
-
-	RGFWDEF b8 RGFW_isMousePressed(RGFW_window* win, u8 button);
-	RGFWDEF b8 RGFW_isMouseHeld(RGFW_window* win, u8 button);
-	RGFWDEF b8 RGFW_isMouseReleased(RGFW_window* win, u8 button);
-	RGFWDEF b8 RGFW_wasMousePressed(RGFW_window* win, u8 button);
 
 /*! clipboard functions*/
 	RGFWDEF char* RGFW_readClipboard(size_t* size); /*!< read clipboard data */

@@ -1,12 +1,12 @@
 module aero3::core::events_handler;
 
-import aero3::math::collections, aero3::core::input_handler;
+import aero3::math::collections, aero3::inputs;
 
 const ushort MAX_DROPS = 260;
 const ushort MAX_PATH = 260;
 
 typedef EventType = uint;
-typedef MouseEvent = uint;
+typedef MouseEvent = char;
 
 const EventType KEY_PRESSED       = 1;
 const EventType KEY_RELEASED      = 2;
@@ -37,26 +37,44 @@ const MouseEvent MOUSE_SCROLL_DOWN = 5;
 
 struct Aero3Event {
 	EventType type;
-    char inFocus;
+    char in_focus;
     Aero3ButtonEvent btn_event;
     Aero3MouseEvent mouse_event;
 }
 
 struct Aero3ButtonEvent {
-    char[16] keyName;
-	Aero3Key keyCode;
-	bool keyUp;
-	bool keyDown;
+    char[16] key_name;
+	Aero3Key key_code;
+	Aero3Key last_key_code;
+	bool key_up;
+	bool key_down;
 }
 
 struct Aero3DragEvent {
-	char[MAX_DROPS][MAX_PATH] droppedFiles;
-	uint droppedFilesCount;
+	char[MAX_DROPS][MAX_PATH] dropped_files;
+	uint dropped_files_count;
 }
 
 struct Aero3MouseEvent {
-    MouseEvent event;
+    MouseEvent mouse_code;
+	MouseEvent last_mouse_code;
 	double scroll;
-	char axisesCount;
-	Vec2[2] axis;
+	char axises_count;
+	collections::Vec2 axis;
+}
+
+fn Aero3Key apiKeyCodeToAero3Key(long os_key_code) {
+	$if $defined(env::WIN32):
+		if (os_key_code > inputs::w_key_code.len) {
+			return NULL_KEY;
+		}
+		return inputs::w_key_code[os_key_code];
+    $endif
+    $if $defined(env::LINUX):
+		if (os_key_code > inputs::l_key_code.len) {
+			return NULL_KEY;
+		}
+		return inputs::l_key_code[os_key_code];
+    $endif
+	
 }

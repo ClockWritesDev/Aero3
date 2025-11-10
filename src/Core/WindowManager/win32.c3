@@ -1,7 +1,7 @@
 module aero3::core::win32_window_manager;
 
 import aero3::os::win32_types, aero3::os::win32_ffi;
-import aero3::core::events_handler, aero3::core::window;
+import aero3::core::events_handler, aero3;
 import aero3::utils::aero3_errors, aero3::utils::types;
 import std::core::mem::allocator, std::io;
 
@@ -12,7 +12,6 @@ struct Win32Window {
     Hinstance hinstance;
     WndClassEx win_class;
     WString title;
-    Aero3Window* parent;
 }
 
 fn Lresult windowProcessMessage(Hwnd window, uint msg, Wparam wParam, Lparam lParam) {
@@ -91,75 +90,34 @@ fn void Win32Window.updateWin32Window(&self, Aero3Event* parent_events) {
                     RGFW_focusCallback(win, 0);
                 }
 
-                break;
+                break;*/
             
+            case win32_types::WM_KEYUP:
+                parent_events.btn_event.last_key_code = parent_events.btn_event.key_code;
+
+                parent_events.btn_event.key_code = events_handler::apiKeyCodeToAero3Key((long) msg.wParam);
+
+                parent_events.btn_event.key_up = true;
+                parent_events.btn_event.key_down = false;
+
+                parent_events.type = events_handler::KEY_RELEASED;
+                break;
+            case win32_types::WM_KEYDOWN:
+                parent_events.btn_event.last_key_code = parent_events.btn_event.key_code;
+
+                parent_events.btn_event.key_code = events_handler::apiKeyCodeToAero3Key((long) msg.wParam);
+
+                parent_events.btn_event.key_up = false;
+                parent_events.btn_event.key_down = true;
+
+                parent_events.type = events_handler::KEY_PRESSED;
+                break;
+            /*
             case WM_MOUSELEAVE:
                 win->event.type = RGFW_mouseLeave;
                 win->src.winArgs |= RGFW_MOUSE_LEFT;
                 RGFW_mouseNotifyCallBack(win, win->event.point, 0);
                 break;
-            
-            case WM_KEYUP: {
-                win->event.keyCode = RGFW_apiKeyCodeToRGFW((u32) msg.wParam);
-                                
-                RGFW_keyboard[win->event.keyCode].prev = RGFW_isPressed(win, win->event.keyCode);
-
-                static char keyName[16];
-                
-                {
-                    GetKeyNameTextA((LONG) msg.lParam, keyName, 16);
-
-                    if ((!(GetKeyState(VK_CAPITAL) & 0x0001) && !(GetKeyState(VK_SHIFT) & 0x8000)) ||
-                        ((GetKeyState(VK_CAPITAL) & 0x0001) && (GetKeyState(VK_SHIFT) & 0x8000))) {
-                        CharLowerBuffA(keyName, 16);
-                    }
-                }
-
-                RGFW_updateLockState(win, (GetKeyState(VK_CAPITAL) & 0x0001), (GetKeyState(VK_NUMLOCK) & 0x0001));
-
-                strncpy(win->event.keyName, keyName, 16);
-
-                if (RGFW_isPressed(win, RGFW_ShiftL)) {
-                    ToAscii((UINT) msg.wParam, MapVirtualKey((UINT) msg.wParam, MAPVK_VK_TO_CHAR),
-                        keyboardState, (LPWORD) win->event.keyName, 0);
-                }
-
-                win->event.type = RGFW_keyReleased;
-                RGFW_keyboard[win->event.keyCode].current = 0;
-                RGFW_keyCallback(win, win->event.keyCode, win->event.keyName, win->event.lockState, 0);
-                break;
-            }
-            case WM_KEYDOWN: {
-                win->event.keyCode = RGFW_apiKeyCodeToRGFW((u32) msg.wParam);
-
-                RGFW_keyboard[win->event.keyCode].prev = RGFW_isPressed(win, win->event.keyCode);
-
-                static char keyName[16];
-                
-                {
-                    GetKeyNameTextA((LONG) msg.lParam, keyName, 16);
-
-                    if ((!(GetKeyState(VK_CAPITAL) & 0x0001) && !(GetKeyState(VK_SHIFT) & 0x8000)) ||
-                        ((GetKeyState(VK_CAPITAL) & 0x0001) && (GetKeyState(VK_SHIFT) & 0x8000))) {
-                        CharLowerBuffA(keyName, 16);
-                    }
-                }
-                                
-                RGFW_updateLockState(win, (GetKeyState(VK_CAPITAL) & 0x0001), (GetKeyState(VK_NUMLOCK) & 0x0001));
-
-                strncpy(win->event.keyName, keyName, 16);
-
-                if (RGFW_isPressed(win, RGFW_ShiftL) & 0x8000) {
-                    ToAscii((UINT) msg.wParam, MapVirtualKey((UINT) msg.wParam, MAPVK_VK_TO_CHAR),
-                        keyboardState, (LPWORD) win->event.keyName, 0);
-                }
-
-                win->event.type = RGFW_keyPressed;
-                RGFW_keyboard[win->event.keyCode].current = 1;
-                RGFW_keyCallback(win, win->event.keyCode, win->event.keyName, win->event.lockState, 1);
-                break;
-            }
-
             case WM_MOUSEMOVE:
                 win->event.type = RGFW_mousePosChanged;
 
@@ -199,10 +157,11 @@ fn void Win32Window.updateWin32Window(&self, Aero3Event* parent_events) {
                 break;*/
 
             case win32_types::WM_MOUSEWHEEL:
+                parent_events.mouse_event.last_mouse_code = parent_events.mouse_event.mouse_code;
                 if (msg.wParam > 0) {
-                    parent_events.mouse_event.event = events_handler::MOUSE_SCROLL_UP;
+                    parent_events.mouse_event.mouse_code = events_handler::MOUSE_SCROLL_UP;
                 } else {
-                    parent_events.mouse_event.event = events_handler::MOUSE_SCROLL_DOWN;
+                    parent_events.mouse_event.mouse_code = events_handler::MOUSE_SCROLL_DOWN;
                 }
 
                 parent_events.mouse_event.scroll = (double) msg.wParam / win32_types::WHEEL_DELTA;
@@ -212,19 +171,22 @@ fn void Win32Window.updateWin32Window(&self, Aero3Event* parent_events) {
                 break;
 
             case win32_types::WM_LBUTTONUP:
-                parent_events.mouse_event.event = events_handler::LEFT_MOUSE;
+                parent_events.mouse_event.last_mouse_code = parent_events.mouse_event.mouse_code;
+                parent_events.mouse_event.mouse_code = events_handler::LEFT_MOUSE;
                 parent_events.type = events_handler::MOUSE_RELEASED;
 
                 //RGFW_mouseButtonCallback(win, win->event.button, win->event.scroll, 0);
                 break;
             case win32_types::WM_RBUTTONUP:
-                parent_events.mouse_event.event = events_handler::RIGHT_MOUSE;
+                parent_events.mouse_event.last_mouse_code = parent_events.mouse_event.mouse_code;
+                parent_events.mouse_event.mouse_code = events_handler::RIGHT_MOUSE;
                 parent_events.type = events_handler::MOUSE_RELEASED;
 
                 //RGFW_mouseButtonCallback(win, win->event.button, win->event.scroll, 0);
                 break;
             case win32_types::WM_MBUTTONUP:
-                parent_events.mouse_event.event = events_handler::MIDDLE_MOUSE;
+                parent_events.mouse_event.last_mouse_code = parent_events.mouse_event.mouse_code;
+                parent_events.mouse_event.mouse_code = events_handler::MIDDLE_MOUSE;
                 parent_events.type = events_handler::MOUSE_RELEASED;
 
                 //RGFW_mouseButtonCallback(win, win->event.button, win->event.scroll, 0);
