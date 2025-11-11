@@ -1,4 +1,4 @@
-module aero3;
+module aero3::window;
 
 import aero3::core::win32_window_manager @norecurse;
 import aero3::core::linux_window_manager @norecurse;

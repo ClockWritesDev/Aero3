@@ -1,6 +1,8 @@
 module aero3::logger;
 
-import aero3::logger::registry, aero3::logger::colors, aero3::logger::datetime;
+import aero3::logger::registry;
+import aero3::logger::colors;
+import aero3::logger::datetime;
 import std::time, std::core::string, std::core::mem::allocator, std::io;
 
 struct Aero3Logger {

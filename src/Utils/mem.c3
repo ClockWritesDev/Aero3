@@ -1,6 +1,12 @@
 module aero3::utils::mem;
 import std::core::mem;
 
+struct BumpAllocator {
+    usz capacity;
+    usz used_bytes;
+    void* memory;
+}
+
 macro void* aero3Alloc(byte_size) {
     void* alloc_ptr = mem::malloc(byte_size);
     if (alloc_ptr == null) {

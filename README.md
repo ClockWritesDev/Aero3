@@ -11,24 +11,33 @@ Credits for the RGFW inspiration: Copyright (C) 2022-2025 Riley Mabb (@Colleague
 
 # Getting started
 ```rust
-module hellowindow_aero3;
-import aero3;
-import std::io;
+import aero3::window;
+import aero3::utils::types, aero3::inputs;
 
 fn void main(String[] args)
 {
-    Aero3Window* win = createWindow("HelloWindow", (Rect){0, 0, 500, 500}, CENTER);
-    defer win.closeWindow();
+    Aero3Window win = window::createWindow("Hello World", (Rect){100, 100, 640, 320})!!;
 
     while (!win.windowShouldClose()) {
-        Aero3Event* events = win.checkEvent();
-        if (events != null) {
-            if (events.keyCode == Aero3Key.ESCAPE) running = false;
+        win.updateWindow();
+        if (win.isKeyPressed(inputs::Aero3Key.ESCAPE)) {
+            win.setShouldClose();
         }
-    }   
+    }
+    win.closeWindow();
 }
 ```
 
+# Building Aero3 Lib Dependency
 ```sh
-c3c build
+c3c build Aero3 --trust=true
+```
+
+# Building Aero3 Hello World Window Test
+```sh
+// Linux
+c3c build Linux-HelloWorld-Aero3
+
+// Windows
+c3c build Windows-HelloWorld-Aero3
 ```

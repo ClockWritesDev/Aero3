@@ -1,0 +1,17 @@
+{ 
+  "provides" : "aero3",
+
+  "authors": [ "ClockWritesDev" ],
+  "version": "0.0.2-SNAPSHOT",
+
+  "sources": [ "./**" ],
+
+  "targets" : {
+    "linux-x64" : {
+      "linked-libraries" : [ "GL", "X11", "xrandr" ]
+    },
+	  "windows-x64" : {
+      "linked-libraries" : [ "opengl32", "gdi32", "kernel32", "user32" ]
+    }
+  }
+}

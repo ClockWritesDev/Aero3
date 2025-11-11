@@ -1,5 +1,4 @@
 {
-  "provides" : "Aero3",
   "authors": [ "ClockWritesDev" ],
   "version": "0.0.2-SNAPSHOT",
 
@@ -7,25 +6,20 @@
   "output": "build",
 
   "targets" : {
-    "Aero3-linux-x64" : {
-      "linkflags" : [],
-      "type": "static-lib",
-      "dependencies" : [],
-      "linked-libs" : [ "GL", "X11", "xrandr" ]
-    },
-    "Aero3-windows-x64" : {
-      "linkflags" : [],
-      "type": "static-lib",
-      "dependencies" : [],
-      "linked-libs" : [ "opengl32", "gdi32", "kernel32", "user32" ]
-    },
+    "Aero3": {
+			"type": "prepare",
+      "script-dir": "./",
+			"exec": ["python ./BuildDep.py"]
+		},
 
-    "linux-helloworld-aero3": { 
-        "linked-libs" : [ "GL", "X11", "xrandr" ],
-        "type": "executable", 
-        "sources": [ "test/01-HelloWindow/**" ] 
+    "Linux-HelloWorld-Aero3": {
+      "name": "HelloWorld-Aero3",
+      "linked-libraries" : [ "GL", "X11", "xrandr" ],
+      "type": "executable", 
+      "sources": [ "test/01-HelloWindow/**" ] 
     },
-    "windows-helloworld-aero3": { 
+    "Windows-HelloWorld-Aero3": {
+      "name": "HelloWorld-Aero3",
       "linked-libraries" : [ "opengl32", "gdi32", "kernel32", "user32" ], 
       "type": "executable", 
       "sources": [ "test/01-HelloWindow/**" ] 

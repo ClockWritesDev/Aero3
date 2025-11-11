@@ -1,0 +1,7 @@
+module aero3;
+
+import aero3::window;
+import aero3::inputs;
+import aero3::utils;
+import aero3::math;
+import aero3::logger;
