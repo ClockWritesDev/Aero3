@@ -16,16 +16,19 @@ struct Area {
     int w;
     int h; 
 }
-
-fn Point newPoint(int x, int y) {
-    return (Point) {x, y};
+struct Arc {
+    int x;
+    int y;
+    int width;
+    int height;
+    float angle1;
+    float angle2;
 }
 
-fn Rect newRect(int x, int y, int w, int h) {
-    return (Rect) {x, y, w, h};
-}
+fn Point newPoint(int x, int y) { return (Point) {x, y}; }
 
-fn Area newArea(int w, int h) {
-    return (Area) {w, h};
-}
+fn Rect newRect(int x, int y, int w, int h) { return (Rect) {x, y, w, h}; }
 
+fn Area newArea(int w, int h) { return (Area) {w, h}; }
+
+fn Arc newArc(int x, int y, int width, int height, float angle1, float angle2) { return (Arc){x, y, width, height, angle1, angle2}; }

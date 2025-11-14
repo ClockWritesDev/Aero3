@@ -9,7 +9,7 @@
     "Aero3": {
 			"type": "prepare",
       "script-dir": "./",
-			"exec": ["python ./BuildDep.py"]
+			"exec": ["python ./BuildDep.py version=0.0.2-SNAPSHOT"]
 		},
 
     "Linux-HelloWorld-Aero3": {

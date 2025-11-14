@@ -3,7 +3,6 @@ module aero3::core::win32_window_manager;
 import aero3::os::win32_types, aero3::os::win32_ffi;
 import aero3::core::events_handler, aero3::window;
 import aero3::utils::aero3_errors, aero3::utils::types;
-import std::core::mem::allocator, std::io;
 
 bool quit = false;
 
@@ -71,26 +70,24 @@ fn Win32Window? createWin32Window(Rect window_size_pos, WString class_name) {
     };
 }
 
-fn void Win32Window.updateWin32Window(&self, Aero3Event* parent_events) {
+fn void Win32Window.checkEventsWin32Window(&self, Aero3Event* parent_events) {
     Msg msg;
 
-    while(win32_ffi::win32_PeekMessageA(&msg, self.window, 0, 0, win32_types::PM_REMOVE)) {
-
+    if (win32_ffi::win32_PeekMessageA(&msg, self.window, 0, 0, win32_types::PM_REMOVE)) {
         switch (msg.message) {
-/*
-            case WM_ACTIVATE:
-                win->event.inFocus = (LOWORD(msg.wParam) == WA_INACTIVE);
+            case win32_types::WM_ACTIVATE:
+                parent_events.inFocus = msg.wParam == win32_types::WA_INACTIVE;
 
-                if (win->event.inFocus) {
-                    win->event.type = RGFW_focusIn;
-                    RGFW_focusCallback(win, 1);
+                if (parent_events.inFocus) {
+                    parent_events.type = events_handler::FOCUS_IN;
                 }
                 else {
-                    win->event.type = RGFW_focusOut;
-                    RGFW_focusCallback(win, 0);
+                    parent_events.type = events_handler::FOCUS_OUT;
                 }
+                break;
 
-                break;*/
+            case win32_types::WM_WINDOWPOSCHANGED:
+                break;
             
             case win32_types::WM_KEYUP:
                 parent_events.btn_event.last_key_code = parent_events.btn_event.key_code;
@@ -192,12 +189,25 @@ fn void Win32Window.updateWin32Window(&self, Aero3Event* parent_events) {
                 //RGFW_mouseButtonCallback(win, win->event.button, win->event.scroll, 0);
                 break;
             default:
-                parent_events.type = events_handler::KEY_PRESSED;
+                //Default Mouse Idle Event
+                parent_events.mouse_event.last_mouse_code = parent_events.mouse_event.mouse_code;
+                parent_events.mouse_event.mouse_code = events_handler::MOUSE_IDLE;
+                parent_events.mouse_event.clicked = false;
+                
+                //Default Button Idle Event
+                parent_events.btn_event.last_key_code = parent_events.btn_event.key_code;
+                parent_events.btn_event.key_code = events_handler::apiKeyCodeToAero3Key(0x0000);
+                parent_events.btn_event.key_up = false;
+                parent_events.btn_event.key_down = false;
+
+                parent_events.type = events_handler::EVENT_IDLE;
                 break;
         }
+
         if (quit) {
             parent_events.type = events_handler::QUIT;
         }
+
         win32_ffi::win32_TranslateMessage(&msg);
         win32_ffi::win32_DispatchMessage(&msg);
     }

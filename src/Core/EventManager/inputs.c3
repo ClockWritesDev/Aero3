@@ -1,7 +1,9 @@
 module aero3::inputs;
 
+typedef Aero3MouseInput = char;
+
 enum Aero3Key : char {
-    ESCAPE,
+    IDLE,
     F1,
     F2,
     F3,
@@ -114,10 +116,11 @@ enum Aero3Key : char {
     KP_PERIOD,
 
     FINAL_KEY,
-    NULL_KEY,
+    ESCAPE,
 }
 
 Aero3Key[] w_key_code = {
+    [0x0000] = Aero3Key.IDLE,
     [0x1B] = Aero3Key.ESCAPE,
     [0x70] = Aero3Key.F1,
     [0x71] = Aero3Key.F2,
@@ -225,6 +228,7 @@ Aero3Key[] w_key_code = {
 };
 
 Aero3Key[] l_key_code = {
+    [0x0000] = Aero3Key.IDLE,
     [0xff1b] = Aero3Key.ESCAPE,
     [0xffbe] = Aero3Key.F1,
     [0xffbf] = Aero3Key.F2,

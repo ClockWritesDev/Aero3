@@ -54,6 +54,10 @@ const Dword CS_VREDRAW = 0x0001;
 const Dword CS_HREDRAW = 0x0002;
 const Dword CS_OWNDC   = 0x0020;
 
+const Wparam WA_ACTIVE		= 1;
+const Wparam WA_CLICKACTIVE	= 2;
+const Wparam WA_INACTIVE	= 0;
+
 const Dword WS_BORDER           = 0x00800000L;
 const Dword WS_CAPTION          = 0x00C00000L;
 const Dword WS_CHILD            = 0x40000000L;

@@ -7,7 +7,6 @@ import aero3::utils::types, aero3::utils::aero3_errors;
 import aero3::math::collections;
 import aero3::logger, aero3::logger::registry;
 
-import std::io;
 import std::thread;
 
 const TRANSPARENT_WINDOW = (1L<<9);
@@ -70,18 +69,30 @@ fn Aero3Window? createWindow(String title, Rect window_size_pos) {
         return (Aero3Window) {src, title_win_style, current_monitor, event, window_size_pos, window_registry};
     $endif
     $if $defined(env::LINUX):
+		ZString title_linux_style = String.to_zstring(title, allocator::mem)!!;
+        X11Window? src = linux_window_manager::createX11Window(window_size_pos, title_linux_style);
+		if (catch src) {
+			window_registry.registerLog("X11 Window Could Not Be Created", registry::REG_FATAL);
+			window_registry.log();
+			return aero3_errors::AERO3_X11_COULD_NOT_CREATE_WINDOW?;
+		}
 
+		window_registry.registerLog("Creating X11 Window");
+        window_registry.log();
+
+        return (Aero3Window) {src, title_linux_style, current_monitor, event, window_size_pos, window_registry};
     $endif
 }
 
-fn void Aero3Window.updateWindow(&self) {
+fn void Aero3Window.checkEvents(&self) {
     $if $defined(env::WIN32):
-        self.src.updateWin32Window(&self.events);
+        self.src.checkEventsWin32Window(&self.events);
     $endif
     $if $defined(env::LINUX):
-
+		self.src.checkEventsX11Window(&self.events);
     $endif
 }
+
 fn void Aero3Window.closeWindow(&self) {
 	self.window_registry.registerLog("Closing & Deleting Window");
 	defer self.window_registry.log();
@@ -103,7 +114,7 @@ fn void Aero3Window.setShouldClose(&self) {
 
 fn void Aero3Window.swapBuffers(&self) {}
 fn void Aero3Window.setVsync(&self, bool vSync) {}
-fn void Aero3Window.sleep(&self, int secs) { thread::sleep_ms((ulong)secs/1000); }
+fn void Aero3Window.sleep(&self, int secs) { thread::sleep_ms((ulong)secs*1000); }
 
 fn void Aero3Window.moveWindow(&self, Vec2 new_pos) {}
 fn void Aero3Window.moveWindowToMonitor(&self, Aero3Monitor monitor) {}
@@ -147,31 +158,23 @@ fn void Aero3Window.scaleToMonitor(&self) {}
 fn Aero3Monitor Aero3Window.getMonitor(&self) {return (Aero3Monitor){};}
 fn void Aero3Window.makeCurrent(&self) {}
 fn bool Aero3Window.isKeyPressed(&self, Aero3Key key) {
-    $if $defined(env::WIN32):
-		if (self.events.btn_event.key_down == true && self.events.btn_event.key_code == key) {
-			return true;
-		} else {
-			return false;
-		}
-    $endif
-    $if $defined(env::LINUX):
-
-    $endif
+	return self.events.type == events_handler::KEY_PRESSED && self.events.btn_event.key_code == key;
 }
 fn bool Aero3Window.isKeyHeld(&self, Aero3Key key) {
 	return true;
 }
 fn bool Aero3Window.isKeyReleased(&self, Aero3Key key) {
-	return true;
+	return self.events.type == events_handler::KEY_RELEASED && self.events.btn_event.key_code == key;
 }
 fn bool Aero3Window.wasKeyPressed(&self, Aero3Key key) {
-	return true;
+	return self.events.btn_event.last_key_code == key;
 }
+fn Aero3Key Aero3Window.getKeyPressed(&self) { return self.events.btn_event.key_code; }
 fn bool Aero3Window.isKeyClicked(&self, Aero3Key key) {	return true;}
-fn bool Aero3Window.isMousePressed(&self, MouseEvent button) {	return true;}
-fn bool Aero3Window.isMouseHeld(&self, MouseEvent button) {	return true;}
-fn bool Aero3Window.isMouseReleased(&self, MouseEvent button) {	return true;}
-fn bool Aero3Window.wasMousePressed(&self, MouseEvent button) {	return true;}
+fn bool Aero3Window.isMousePressed(&self, Aero3MouseEvent button) {	return true;}
+fn bool Aero3Window.isMouseHeld(&self, Aero3MouseEvent button) {	return true;}
+fn bool Aero3Window.isMouseReleased(&self, Aero3MouseEvent button) {	return true;}
+fn bool Aero3Window.wasMousePressed(&self, Aero3MouseEvent button) {	return true;}
 
 
 /*
