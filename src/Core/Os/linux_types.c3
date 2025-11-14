@@ -39,6 +39,14 @@ const Int32 CWBORDERWIDTH = (1<<4);
 const Int32 CWSIBLING     = (1<<5);
 const Int32 CWSTACKMODE   = (1<<6);
 
+const Int32 KEYPRESS		= 2;
+const Int32 KEYRELEASE		= 3;
+const Int32 BUTTONPRESS		= 4;
+const Int32 BUTTONRELEASE	= 5;
+const Int32 MOTIONNOTIFY	= 6;
+const Int32 ENTERNOTIFY		= 7;
+const Int32 LEAVENOTIFY		= 8;
+
 const Bool FALSE = 0;
 const Bool TRUE = 1;
 

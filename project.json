@@ -12,9 +12,9 @@
 			"exec": ["python ./BuildDep.py version=0.0.2-SNAPSHOT"]
 		},
 
-    "Linux-HelloWorld-Aero3": {
+    "X11-HelloWorld-Aero3": {
       "name": "HelloWorld-Aero3",
-      "linked-libraries" : [ "GL", "X11", "xrandr" ],
+      "linked-libraries" : [ "GL", "X11", "Xrandr", "m" ],
       "type": "executable", 
       "sources": [ "test/01-HelloWindow/**" ] 
     },

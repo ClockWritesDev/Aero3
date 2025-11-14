@@ -54,55 +54,54 @@ fn Aero3Window? createWindow(String title, Rect window_size_pos) {
     Aero3Monitor current_monitor;
 	Aero3Event event;
 
-    $if $defined(env::WIN32):
-        WString title_win_style = String.to_wstring(title, allocator::mem)!!;
-        Win32Window? src = win32_window_manager::createWin32Window(window_size_pos, title_win_style);
-		if (catch src) {
-			window_registry.registerLog("WIN32 Window Could Not Be Created", registry::REG_FATAL);
+    $switch:
+		$case env::WIN32:
+			WString title_win_style = String.to_wstring(title, allocator::mem)!!;
+			Win32Window? src = win32_window_manager::createWin32Window(window_size_pos, title_win_style);
+			if (catch src) {
+				window_registry.registerLog("WIN32 Window Could Not Be Created", registry::REG_FATAL);
+				window_registry.log();
+				return aero3_errors::AERO3_WIN32_COULD_NOT_CREATE_WINDOW?;
+			}
+
+			window_registry.registerLog("Creating WIN32 Window");
 			window_registry.log();
-			return aero3_errors::AERO3_WIN32_COULD_NOT_CREATE_WINDOW?;
-		}
 
-		window_registry.registerLog("Creating WIN32 Window");
-        window_registry.log();
+			return (Aero3Window) {src, title_win_style, current_monitor, event, window_size_pos, window_registry};
+		$case env::LINUX:
+			ZString title_linux_style = (ZString)title;
+			X11Window? src = linux_window_manager::createX11Window(window_size_pos, title_linux_style);
+			if (catch src) {
+				window_registry.registerLog("X11 Window Could Not Be Created", registry::REG_FATAL);
+				window_registry.log();
+				return aero3_errors::AERO3_X11_COULD_NOT_CREATE_WINDOW?;
+			}
 
-        return (Aero3Window) {src, title_win_style, current_monitor, event, window_size_pos, window_registry};
-    $endif
-    $if $defined(env::LINUX):
-		ZString title_linux_style = String.to_zstring(title, allocator::mem)!!;
-        X11Window? src = linux_window_manager::createX11Window(window_size_pos, title_linux_style);
-		if (catch src) {
-			window_registry.registerLog("X11 Window Could Not Be Created", registry::REG_FATAL);
+			window_registry.registerLog("Creating X11 Window");
 			window_registry.log();
-			return aero3_errors::AERO3_X11_COULD_NOT_CREATE_WINDOW?;
-		}
 
-		window_registry.registerLog("Creating X11 Window");
-        window_registry.log();
-
-        return (Aero3Window) {src, title_linux_style, current_monitor, event, window_size_pos, window_registry};
-    $endif
+			return (Aero3Window) {src, title_linux_style, current_monitor, event, window_size_pos, window_registry};
+    $endswitch
 }
 
 fn void Aero3Window.checkEvents(&self) {
-    $if $defined(env::WIN32):
-        self.src.checkEventsWin32Window(&self.events);
-    $endif
-    $if $defined(env::LINUX):
-		self.src.checkEventsX11Window(&self.events);
-    $endif
+    $switch:
+	    $case env::WIN32:
+			self.src.checkEventsWin32Window(&self.events);
+	    $case env::LINUX:
+			self.src.checkEventsX11Window(&self.events);
+    $endswitch
 }
 
 fn void Aero3Window.closeWindow(&self) {
 	self.window_registry.registerLog("Closing & Deleting Window");
 	defer self.window_registry.log();
-
-    $if $defined(env::WIN32):
-        self.src.closeWin32Window();
-    $endif
-    $if $defined(env::LINUX):
-
-    $endif
+	$switch:
+	    $case env::WIN32:
+			self.src.closeWin32Window();
+	    $case env::LINUX:
+			self.src.closeX11Window();
+	$endswitch
 }
 
 fn bool Aero3Window.windowShouldClose(&self) {

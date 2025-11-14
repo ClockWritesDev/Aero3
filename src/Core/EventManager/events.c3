@@ -65,16 +65,15 @@ struct Aero3MouseEvent {
 }
 
 fn Aero3Key apiKeyCodeToAero3Key(long os_key_code) {
-	if (os_key_code > inputs::w_key_code.len) {
-		return Aero3Key.IDLE;
-	} 
-	if (os_key_code > inputs::l_key_code.len){
-		return Aero3Key.IDLE;
+	Aero3Key key;
+	if (os_key_code > inputs::w_key_code.len || os_key_code > inputs::l_key_code.len) {
+		key = Aero3Key.IDLE;
 	}
-	$if $defined(env::WIN32):
-        return inputs::w_key_code[os_key_code];
-    $endif
-    $if $defined(env::LINUX):
-		return inputs::l_key_code[os_key_code];
-    $endif
+	$switch:
+		$case env::WIN32:
+			key = inputs::w_key_code[os_key_code];
+		$case env::LINUX:
+			key = inputs::l_key_code[os_key_code];
+    	$endswitch
+    	return key;
 }

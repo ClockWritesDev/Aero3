@@ -16,7 +16,7 @@ extern fn Screen x11_XDefaultScreen(Display* display) @extern("XDefaultScreen");
 extern fn Int32 x11_XDisplayWidth(Display* display, Int32 screen_number) @extern("XDisplayWidth");
 extern fn Int32 x11_XDisplayHeight(Display* display, Int32 screen_number) @extern("XDisplayHeight");
 
-extern fn Window x11_DefaultRootWindow(Display* display) @extern("DefaultRootWindow");
+extern fn Window x11_DefaultRootWindow(Display* display) @extern("XDefaultRootWindow");
 extern fn Window x11_XRootWindow(Display* display, Int32 screen_number) @extern("XRootWindow");
 extern fn Window x11_XCreateWindow(Display* display, Window parent, Int32 x, Int32 y, Card64 width, Card64 height, 
     Card64 border_width, Int32 depth, Card32 class, Visual* visual, Card64 value_mask, XSetWindowAttributes* attributes) @extern("XCreateWindow");

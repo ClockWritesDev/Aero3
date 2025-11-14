@@ -1,4 +1,4 @@
-module aero3::core::win32_window_manager;
+module aero3::core::win32_window_manager @if(env::WIN32);
 
 import aero3::os::win32_types, aero3::os::win32_ffi;
 import aero3::core::events_handler, aero3::window;
@@ -76,9 +76,9 @@ fn void Win32Window.checkEventsWin32Window(&self, Aero3Event* parent_events) {
     if (win32_ffi::win32_PeekMessageA(&msg, self.window, 0, 0, win32_types::PM_REMOVE)) {
         switch (msg.message) {
             case win32_types::WM_ACTIVATE:
-                parent_events.inFocus = msg.wParam == win32_types::WA_INACTIVE;
+                parent_events.in_focus = msg.wParam == win32_types::WA_INACTIVE;
 
-                if (parent_events.inFocus) {
+                if (parent_events.in_focus) {
                     parent_events.type = events_handler::FOCUS_IN;
                 }
                 else {
