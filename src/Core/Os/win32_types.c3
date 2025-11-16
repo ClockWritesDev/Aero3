@@ -1,4 +1,4 @@
-module aero3::os::win32_types;
+module aero3::os::win32;
 
 import aero3::utils::types;
 

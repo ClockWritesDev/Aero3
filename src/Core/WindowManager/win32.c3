@@ -1,6 +1,6 @@
 module aero3::core::win32_window_manager @if(env::WIN32);
 
-import aero3::os::win32_types, aero3::os::win32_ffi;
+import aero3::os::win32;
 import aero3::core::events_handler, aero3::window;
 import aero3::utils::aero3_errors, aero3::utils::types;
 
